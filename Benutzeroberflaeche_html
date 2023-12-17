@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benutzeroberfläche</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h2 {
+            border-bottom: 1px solid #ccc;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #45b849;
+            color: white;
+            border: solid black;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2cce34;
+        }
+
+        .component-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .component {
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        .nested-component {
+            margin-left: 20px;
+        }
+
+        .product-structure h3 {
+            font-size: 18px; /* Schriftgröße der Baugruppen */
+        }
+
+        .edit-form {
+            display: none;
+        }
+
+        .delete-button {
+            background-color: #e74c3c;
+        }
+
+        .delete-button:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Neue Baugruppe:</h2>
+    <form id="itemForm">
+        <label for="itemName">Name:</label>
+        <input type="text" id="itemName" name="itemName" required>
+
+        <label for="itemDescription">Beschreibung:</label>
+        <textarea id="itemDescription" name="itemDescription" required></textarea>
+
+        <label for="itemMaterial">Material:</label>
+        <input type="text" id="itemMaterial" name="itemMaterial" required>
+
+        <button type="button" onclick="showItem()">Hinzufügen</button>
+    </form>
+
+    <h2>Produktstruktur:</h2>
+    <div id="productStructures">
+        <!-- Hier werden die Produktstrukturen dynamisch hinzugefügt -->
+    </div>
+
+    <script>
+        let structureCounter = 1;
+
+        function showItem() {
+            const itemName = document.getElementById('itemName').value;
+            const itemDescription = document.getElementById('itemDescription').value;
+            const itemMaterial = document.getElementById('itemMaterial').value;
+
+            const itemHTML = `
+                <li class="component" id="item_${structureCounter}">
+                    <h3>${itemName}</h3>
+                    <p><strong>Beschreibung:</strong> ${itemDescription}</p>
+                    <p><strong>Material:</strong> ${itemMaterial}</p>
+                    <button type="button" onclick="editItem('item_${structureCounter}')">Bearbeiten</button>
+                    <button type="button" onclick="deleteItem('item_${structureCounter}')"
+                            class="delete-button">Löschen</button>
+                    <ul class="component-list" id="nestedComponents_${structureCounter}"></ul>
+                </li>
+            `;
+            
+            const productStructures = document.getElementById('productStructures');
+            const structureID = `structure_${structureCounter}`;
+            const structureHTML = `
+                <div id="${structureID}" class="product-structure">
+                    <h3>Baugruppe ${structureCounter}</h3>
+                    <ul class="component-list">${itemHTML}</ul>
+                    <button type="button" onclick="addComponent('${structureID}')">Bauteil hinzufügen</button>
+                    <button type="button" onclick="deleteStructure('${structureID}')"
+                            class="delete-button">Baugruppe löschen</button>
+                </div>
+            `;
+
+            productStructures.insertAdjacentHTML('beforeend', structureHTML);
+            structureCounter++;
+        }
+
+        function addComponent(structureID) {
+            const structure = document.getElementById(structureID);
+            const nestedComponentsID = `nestedComponents_${structureID.split('_')[1]}`;
+            const nestedComponents = document.getElementById(nestedComponentsID);
+
+            const itemFormHTML = `
+                <form class="item-form nested-component">
+                    <label for="componentName">Name:</label>
+                    <input type="text" id="componentName" name="componentName" placeholder="Neuer Name">
+
+                    <label for="componentDescription">Beschreibung:</label>
+                    <textarea id="componentDescription" name="componentDescription"
+                              placeholder="Neue Beschreibung"></textarea>
+
+                    <label for="componentMaterial">Material:</label>
+                    <input type="text" id="componentMaterial" name="componentMaterial"
+                           placeholder="Neues Material">
+
+                    <button type="button" onclick="saveComponent('${structureID}')">Speichern</button>
+                </form>
+            `;
+
+            nestedComponents.insertAdjacentHTML('beforeend', itemFormHTML);
+        }
+
+        function saveComponent(structureID) {
+            const structure = document.getElementById(structureID);
+            const nestedComponentsID = `nestedComponents_${structureID.split('_')[1]}`;
+            const nestedComponents = document.getElementById(nestedComponentsID);
+
+            const itemForm = nestedComponents.lastElementChild;
+
+            const componentName = itemForm.querySelector('#componentName').value;
+            const componentDescription = itemForm.querySelector('#componentDescription').value;
+            const componentMaterial = itemForm.querySelector('#componentMaterial').value;
+
+            // Hier kannst du die Logik implementieren, um die Bauteildaten zu speichern oder weiter zu verarbeiten
+
+            // Beispiel: Anzeige der gespeicherten Bauteildaten
+            const savedItemHTML = `
+                <li class="component nested-component">
+                    <h3>${componentName}</h3>
+                    <p><strong>Beschreibung:</strong> ${componentDescription}</p>
+                    <p><strong>Material:</strong> ${componentMaterial}</p>
+                    <button type="button" onclick="editItem('${itemForm.parentElement.id}')">Bearbeiten</button>
+                    <button type="button" onclick="deleteItem('${itemForm.parentElement.id}')"
+                            class="delete-button">Löschen</button>
+                </li>
+            `;
+
+            nestedComponents.removeChild(itemForm); // Entferne das Formular
+            nestedComponents.insertAdjacentHTML('beforeend', savedItemHTML);
+        }
+
+        function editItem(itemID) {
+            const item = document.getElementById(itemID);
+            const editForm = item.querySelector('.edit-form');
+
+            if (!editForm) {
+                const itemName = item.querySelector('h3').innerText;
+                const itemDescription = item.querySelector('p:nth-child(2)').innerText.replace('Beschreibung:', '').trim();
+                const itemMaterial = item.querySelector('p:nth-child(3)').innerText.replace('Material:', '').trim();
+
+                const editFormHTML = `
+                    <form class="edit-form">
+                        <label for="editName">Name:</label>
+                        <input type="text" id="editName" name="editName" value="${itemName}">
+
+                        <label for="editDescription">Beschreibung:</label>
+                        <textarea id="editDescription" name="editDescription">${itemDescription}</textarea>
+
+                        <label for="editMaterial">Material:</label>
+                        <input type="text" id="editMaterial" name="editMaterial" value="${itemMaterial}">
+
+                        <button type="button" onclick="saveEdit('${itemID}')">Speichern</button>
+                    </form>
+                `;
+
+                item.insertAdjacentHTML('beforeend', editFormHTML);
+            } else {
+                editForm.style.display = editForm.style.display === 'none' ? 'block' : 'none';
+            }
+
+            item.querySelector('h3').style.display = 'none';
+            item.querySelector('p:nth-child(2)').style.display = 'none';
+            item.querySelector('p:nth-child(3)').style.display = 'none';
+        }
+
+        function saveEdit(itemID) {
+            const item = document.getElementById(itemID);
+            const editForm = item.querySelector('.edit-form');
+
+            const editedName = editForm.querySelector('#editName').value;
+            const editedDescription = editForm.querySelector('#editDescription').value;
+            const editedMaterial = editForm.querySelector('#editMaterial').value;
+
+            item.querySelector('h3').innerText = editedName;
+            item.querySelector('p:nth-child(2)').innerText = `Beschreibung: ${editedDescription}`;
+            item.querySelector('p:nth-child(3)').innerText = `Material: ${editedMaterial}`;
+
+            editForm.style.display = 'none';
+
+            item.querySelector('h3').style.display = 'block';
+            item.querySelector('p:nth-child(2)').style.display = 'block';
+            item.querySelector('p:nth-child(3)').style.display = 'block';
+        }
+
+        function deleteItem(itemID) {
+            const item = document.getElementById(itemID);
+            const parent = item.parentElement;
+
+            parent.removeChild(item);
+        }
+
+        function deleteStructure(structureID) {
+            const structure = document.getElementById(structureID);
+            const parent = structure.parentElement;
+
+            parent.removeChild(structure);
+            structureCounter--;
+        }
+    </script>
+
+</body>
+</html>
